@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:id="@+id/activity_day"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="ca.mattcudmore.day2day.DayActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:orientation="horizontal">
+
+        <!-- Request focus to prevent focus on EditText when activity launches -->
+        <requestFocus/>
+
+        <TextView
+            android:id="@+id/textView_currentDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="October 8, 2016"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            android:textStyle="normal|bold"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/editText_newEntry"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:ems="10"
+            android:hint="Enter event"
+            android:imeOptions="actionDone"
+            android:inputType="text|textCapSentences|textShortMessage"
+            android:singleLine="true"
+            android:textAlignment="textStart"/>
+
+        <Button
+            android:id="@+id/button_editNewEntry"
+            android:layout_width="140sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="…"/>
+
+        <Button
+            android:id="@+id/button_addNewEntry"
+            android:layout_width="140sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="✓"/>
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <ListView
+            android:id="@+id/listView_events"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </ScrollView>
+
+</LinearLayout>
