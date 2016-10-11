@@ -39,41 +39,35 @@
         android:orientation="horizontal">
 
         <EditText
-            android:id="@+id/editText_newEntry"
+            android:id="@+id/editText_newEvent"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:ems="10"
-            android:hint="Enter event"
+            android:hint="@string/editText_newEvent_hint"
             android:imeOptions="actionDone"
             android:inputType="text|textCapSentences|textShortMessage"
             android:singleLine="true"
             android:textAlignment="textStart"/>
 
         <Button
-            android:id="@+id/button_editNewEntry"
+            android:id="@+id/button_editNewEvent"
             android:layout_width="140sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="…"/>
+            android:text="@string/button_editNewEvent_text"/>
 
         <Button
-            android:id="@+id/button_addNewEntry"
+            android:id="@+id/button_addNewEvent"
             android:layout_width="140sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="✓"/>
+            android:text="@string/button_addNewEvent_text"/>
     </LinearLayout>
 
-    <ScrollView
+    <ListView
+        android:id="@+id/listView_events"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
-
-        <ListView
-            android:id="@+id/listView_events"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-    </ScrollView>
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>

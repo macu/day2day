@@ -9,6 +9,7 @@ import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class D2dDatabase extends SQLiteOpenHelper {
 
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-	static class EventEntry implements BaseColumns {
+	static class EventEntry implements BaseColumns, Serializable {
 		static final String TABLE_NAME = "event";
 		static final String COL_NAME_Title = "title";
 		static final String COL_NAME_Comment = "comment";
@@ -68,19 +69,24 @@ public class D2dDatabase extends SQLiteOpenHelper {
 		}
 
 		private EventEntry(@NonNull SQLiteDatabase db, @NonNull Date date, @NonNull String title, @Nullable String comment) {
-			String dateString = dateFormat.format(date);
-
-			ContentValues values = new ContentValues();
-			values.put(EventEntry.COL_NAME_Title, title);
-			values.put(EventEntry.COL_NAME_Comment, comment);
-			values.put(EventEntry.COL_NAME_StartDay, dateString);
-			values.put(EventEntry.COL_NAME_EndDay, dateString);
-
-			this._id = db.insert(TABLE_NAME, null, values);
 			this.title = title;
 			this.comment = comment;
 			this.startDay = date;
 			this.endDay = date;
+			this._id = db.insert(TABLE_NAME, null, getValues());
+		}
+
+		private ContentValues getValues() {
+			ContentValues values = new ContentValues();
+			values.put(EventEntry.COL_NAME_Title, title);
+			values.put(EventEntry.COL_NAME_Comment, comment);
+			values.put(EventEntry.COL_NAME_StartDay, dateFormat.format(startDay));
+			values.put(EventEntry.COL_NAME_EndDay, dateFormat.format(endDay));
+			return values;
+		}
+
+		private void save(SQLiteDatabase db) {
+			db.update(TABLE_NAME, getValues(), _ID + "=?", new String[]{Long.toString(_id)});
 		}
 	}
 
@@ -97,7 +103,13 @@ public class D2dDatabase extends SQLiteOpenHelper {
 	public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
 	}
 
-	public @NonNull List<EventEntry> getEntries(@NonNull Date date) {
+	@NonNull
+	public EventEntry addEvent(@NonNull Date date, @NonNull String title, @Nullable String comment) {
+		return new EventEntry(getWritableDatabase(), date, title, comment);
+	}
+
+	@NonNull
+	public List<EventEntry> getEntries(@NonNull Date date) {
 		SQLiteDatabase db = getReadableDatabase();
 
 		String dateString = dateFormat.format(date);
@@ -122,9 +134,8 @@ public class D2dDatabase extends SQLiteOpenHelper {
 		return entries;
 	}
 
-	public @NonNull EventEntry addEntry(@NonNull Date date, @NonNull String title, @Nullable String comment) {
-		SQLiteDatabase db = getWritableDatabase();
-		return new EventEntry(db, date, title, comment);
+	public void save(@NonNull EventEntry event) {
+		event.save(this.getWritableDatabase());
 	}
 
 }

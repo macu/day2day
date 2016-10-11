@@ -35,13 +35,23 @@ public class DayEventsAdapter extends BaseAdapter {
 		notifyDataSetChanged();
 	}
 
+	public void updateEvent(D2dDatabase.EventEntry event) {
+		for (int i = 0; i < events.size(); i++) {
+			if (events.get(i)._id == event._id) {
+				events.set(i, event);
+				notifyDataSetChanged();
+				break;
+			}
+		}
+	}
+
 	@Override
 	public int getCount() {
 		return events.size();
 	}
 
 	@Override
-	public Object getItem(int i) {
+	public D2dDatabase.EventEntry getItem(int i) {
 		return events.get(i);
 	}
 
@@ -71,4 +81,5 @@ public class DayEventsAdapter extends BaseAdapter {
 
 		return view;
 	}
+
 }

@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">day2day</string>
+
+    <string name="editText_newEvent_hint">Enter event</string>
+    <string name="button_editNewEvent_text">…</string>
+    <string name="button_addNewEvent_text">✓</string>
+
+    <string name="dialog_addEvent_title">Add event</string>
+    <string name="dialog_editEvent_title">Edit event</string>
+    <string name="dialog_addEvent_done">Add</string>
+    <string name="dialog_editEvent_done">Save</string>
+    <string name="dialog_cancel">Cancel</string>
+
 </resources>
