@@ -103,6 +103,32 @@ public class D2dDatabase extends SQLiteOpenHelper {
 	public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
 	}
 
+	public Date getMinDate() {
+		SQLiteDatabase db = getReadableDatabase();
+		Cursor c = db.query(
+				EventEntry.TABLE_NAME,
+				new String[]{EventEntry.COL_NAME_StartDay},
+				null,
+				null,
+				null,
+				null,
+				EventEntry.COL_NAME_StartDay
+		);
+		c.moveToFirst();
+		if (!c.isAfterLast()) {
+			try {
+				return dateFormat.parse(c.getString(c.getColumnIndexOrThrow(EventEntry.COL_NAME_StartDay)));
+			} catch (ParseException e) {
+				Timber.e(e);
+			} finally {
+				c.close();
+			}
+		}
+		c.close();
+		// else return current date
+		return new Date();
+	}
+
 	@NonNull
 	public EventEntry addEvent(@NonNull Date date, @NonNull String title, @Nullable String comment) {
 		return new EventEntry(getWritableDatabase(), date, title, comment);

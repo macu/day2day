@@ -22,12 +22,11 @@
         <!-- Request focus to prevent focus on EditText when activity launches -->
         <requestFocus/>
 
-        <TextView
-            android:id="@+id/textView_currentDate"
-            android:layout_width="0dp"
+        <Button
+            android:id="@+id/button_currentDate"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="October 8, 2016"
+            android:text="Oct 8, 2016"
             android:textAlignment="center"
             android:textSize="24sp"
             android:textStyle="normal|bold"/>

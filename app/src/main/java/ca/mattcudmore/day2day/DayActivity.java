@@ -1,5 +1,6 @@
 package ca.mattcudmore.day2day;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -7,17 +8,22 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
-public class DayActivity extends AppCompatActivity implements EventEntryDialog.OnDismissListener {
+import timber.log.Timber;
 
-	private TextView textView_currentDate;
+public class DayActivity extends AppCompatActivity implements
+		DatePickerDialog.OnDateSetListener,
+		EventEntryDialog.OnDismissListener {
+
+	private Button button_currentDate;
 	private EditText editText_newEntry;
 	private Button button_editNewEntry, button_addNewEntry;
 	private ListView listView_events;
@@ -31,11 +37,39 @@ public class DayActivity extends AppCompatActivity implements EventEntryDialog.O
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_day);
 
-		textView_currentDate = (TextView) findViewById(R.id.textView_currentDate);
+		if (savedInstanceState != null) {
+			currentDate = (Date) savedInstanceState.getSerializable("currentDate");
+		}
+		if (currentDate == null) {
+			currentDate = new Date();
+		}
+
+		button_currentDate = (Button) findViewById(R.id.button_currentDate);
 		editText_newEntry = (EditText) findViewById(R.id.editText_newEvent);
 		button_editNewEntry = (Button) findViewById(R.id.button_editNewEvent);
 		button_addNewEntry = (Button) findViewById(R.id.button_addNewEvent);
 		listView_events = (ListView) findViewById(R.id.listView_events);
+
+		button_currentDate.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(currentDate);
+				int year = cal.get(Calendar.YEAR);
+				int month = cal.get(Calendar.MONTH);
+				int day = cal.get(Calendar.DAY_OF_MONTH);
+
+				DatePickerDialog dialog = new DatePickerDialog(DayActivity.this, DayActivity.this, year, month, day);
+
+				DatePicker datePicker = dialog.getDatePicker();
+				D2dDatabase db = new D2dDatabase(DayActivity.this);
+				datePicker.setMinDate(db.getMinDate().getTime());
+				db.close();
+				datePicker.setMaxDate(System.currentTimeMillis());
+
+				dialog.show();
+			}
+		});
 
 		editText_newEntry.addTextChangedListener(
 				new TextWatcher() {
@@ -98,12 +132,32 @@ public class DayActivity extends AppCompatActivity implements EventEntryDialog.O
 	protected void onResume() {
 		super.onResume();
 
-		currentDate = new Date();
-		textView_currentDate.setText(SimpleDateFormat.getDateInstance().format(currentDate));
+		loadCurrentDayEvents();
+	}
+
+	private void loadCurrentDayEvents() {
+		button_currentDate.setText(SimpleDateFormat.getDateInstance().format(currentDate));
 
 		D2dDatabase db = new D2dDatabase(this);
 		dayEventsAdapter.showEvents(db.getEntries(currentDate));
 		db.close();
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		outState.putSerializable("currentDate", currentDate);
+
+		super.onSaveInstanceState(outState);
+	}
+
+	@Override
+	public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.YEAR, year);
+		cal.set(Calendar.MONTH, month);
+		cal.set(Calendar.DAY_OF_MONTH, day);
+		currentDate = cal.getTime();
+		loadCurrentDayEvents();
 	}
 
 	/* implements EventEntryDialog.OnDismissListener ********************************** */
