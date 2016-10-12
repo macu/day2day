@@ -9,11 +9,13 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
@@ -119,16 +121,15 @@ public class MainActivity extends AppCompatActivity implements
 
 					@Override
 					public void afterTextChanged(Editable s) {
-						boolean textEntered = !editText_newEntry.getText().toString().trim().isEmpty();
-						button_addNewEvent.setEnabled(textEntered);
+						observeNewEventEntryState();
 					}
 				}
 		);
 
-		editText_newEntry.setOnKeyListener(new View.OnKeyListener() {
+		editText_newEntry.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 			@Override
-			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				if (actionId == EditorInfo.IME_ACTION_DONE) {
 					if (!editText_newEntry.getText().toString().trim().isEmpty()) {
 						submitNewEvent();
 						return true;
@@ -188,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements
 		super.onResume();
 
 		showDate(displayedDate);
+		observeNewEventEntryState();
 	}
 
 	@Override
@@ -247,6 +249,11 @@ public class MainActivity extends AppCompatActivity implements
 		}
 		D2dEvent event = db.addEvent(displayedDate, title, null);
 		finishCreateEvent(event);
+	}
+
+	private void observeNewEventEntryState() {
+		boolean textEntered = !editText_newEntry.getText().toString().trim().isEmpty();
+		button_addNewEvent.setEnabled(textEntered);
 	}
 
 	/* implements EventEditDialog.OnDismissListener ********************************** */

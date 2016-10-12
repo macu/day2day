@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="Title"
+        android:hint="@string/editText_eventTitle_hint"
         android:inputType="text|textCapSentences|textShortMessage"/>
 
     <EditText
@@ -17,7 +17,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="Comment"
-        android:inputType="text|textCapSentences|textAutoCorrect|textLongMessage"/>
+        android:hint="@string/editText_eventComment_hint"
+        android:inputType="text|textCapSentences|textAutoCorrect|textMultiLine"
+        android:scrollHorizontally="false"/>
 
 </LinearLayout>

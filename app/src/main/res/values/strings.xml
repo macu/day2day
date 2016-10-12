@@ -18,5 +18,7 @@
     <string name="button_addNewEvent_help">Add new event</string>
     <string name="toast_enterEventName">Enter a name for the event</string>
     <string name="blank_event_name">New event</string>
+    <string name="editText_eventComment_hint">Comment</string>
+    <string name="editText_eventTitle_hint">Title</string>
 
 </resources>
