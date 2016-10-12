@@ -10,6 +10,8 @@ import android.widget.TextView;
 import java.util.Collections;
 import java.util.List;
 
+import ca.mattcudmore.day2day.db.D2dEvent;
+
 /**
  * Created by macu on 2016-10-08.
  */
@@ -17,7 +19,7 @@ public class DayEventsAdapter extends BaseAdapter {
 	private final Context context;
 	private LayoutInflater inflater;
 
-	private List<D2dDatabase.EventEntry> events;
+	private List<D2dEvent> events;
 
 	public DayEventsAdapter(Context context) {
 		this.context = context;
@@ -25,17 +27,17 @@ public class DayEventsAdapter extends BaseAdapter {
 		this.events = Collections.emptyList();
 	}
 
-	public void showEvents(List<D2dDatabase.EventEntry> events) {
+	public void showEvents(List<D2dEvent> events) {
 		this.events = events;
 		notifyDataSetChanged();
 	}
 
-	public void prependEvent(D2dDatabase.EventEntry event) {
+	public void prependEvent(D2dEvent event) {
 		this.events.add(0, event);
 		notifyDataSetChanged();
 	}
 
-	public void updateEvent(D2dDatabase.EventEntry event) {
+	public void updateEvent(D2dEvent event) {
 		for (int i = 0; i < events.size(); i++) {
 			if (events.get(i)._id == event._id) {
 				events.set(i, event);
@@ -51,7 +53,7 @@ public class DayEventsAdapter extends BaseAdapter {
 	}
 
 	@Override
-	public D2dDatabase.EventEntry getItem(int i) {
+	public D2dEvent getItem(int i) {
 		return events.get(i);
 	}
 
@@ -63,10 +65,10 @@ public class DayEventsAdapter extends BaseAdapter {
 	@Override
 	public View getView(int i, View view, ViewGroup viewGroup) {
 		if (view == null) {
-			view = inflater.inflate(R.layout.event_preview, null);
+			view = inflater.inflate(R.layout.cell_event, null);
 		}
 
-		D2dDatabase.EventEntry event = events.get(i);
+		D2dEvent event = events.get(i);
 
 		TextView textView_eventTitle = ((TextView) view.findViewById(R.id.textView_eventTitle));
 		TextView textView_eventComment = ((TextView) view.findViewById(R.id.textView_eventComment));

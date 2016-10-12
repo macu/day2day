@@ -1,14 +1,12 @@
 package ca.mattcudmore.day2day;
 
-import android.app.Application;
-
 import timber.log.Timber;
 
 /**
  * Created by macu on 2016-10-08.
  */
 
-public class D2dApplication extends Application {
+public class Application extends android.app.Application {
 
 	@Override
 	public void onCreate() {

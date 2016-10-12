@@ -2,6 +2,7 @@ package ca.mattcudmore.day2day;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -11,22 +12,24 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import timber.log.Timber;
+import ca.mattcudmore.day2day.db.D2dDatabase;
+import ca.mattcudmore.day2day.db.D2dEvent;
 
-public class DayActivity extends AppCompatActivity implements
+public class MainActivity extends AppCompatActivity implements
 		DatePickerDialog.OnDateSetListener,
-		EventEntryDialog.OnDismissListener {
+		EventEditDialog.OnDismissListener {
 
-	private Button button_currentDate;
+	private Button button_currentDate, button_prevDay, button_nextDay;
 	private EditText editText_newEntry;
 	private Button button_editNewEntry, button_addNewEntry;
 	private ListView listView_events;
+
+	private D2dDatabase db;
 
 	private DayEventsAdapter dayEventsAdapter;
 
@@ -35,7 +38,7 @@ public class DayActivity extends AppCompatActivity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_day);
+		setContentView(R.layout.activity_main);
 
 		if (savedInstanceState != null) {
 			currentDate = (Date) savedInstanceState.getSerializable("currentDate");
@@ -45,6 +48,8 @@ public class DayActivity extends AppCompatActivity implements
 		}
 
 		button_currentDate = (Button) findViewById(R.id.button_currentDate);
+		button_prevDay = (Button) findViewById(R.id.button_prevDay);
+		button_nextDay = (Button) findViewById(R.id.button_nextDay);
 		editText_newEntry = (EditText) findViewById(R.id.editText_newEvent);
 		button_editNewEntry = (Button) findViewById(R.id.button_editNewEvent);
 		button_addNewEntry = (Button) findViewById(R.id.button_addNewEvent);
@@ -59,15 +64,41 @@ public class DayActivity extends AppCompatActivity implements
 				int month = cal.get(Calendar.MONTH);
 				int day = cal.get(Calendar.DAY_OF_MONTH);
 
-				DatePickerDialog dialog = new DatePickerDialog(DayActivity.this, DayActivity.this, year, month, day);
+				DatePickerDialog dialog = new DatePickerDialog(MainActivity.this, MainActivity.this, year, month, day);
 
 				DatePicker datePicker = dialog.getDatePicker();
-				D2dDatabase db = new D2dDatabase(DayActivity.this);
 				datePicker.setMinDate(db.getMinDate().getTime());
-				db.close();
 				datePicker.setMaxDate(System.currentTimeMillis());
 
 				dialog.show();
+			}
+		});
+
+		button_currentDate.setOnLongClickListener(new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View view) {
+				showDate(new Date()); // show today
+				return true;
+			}
+		});
+
+		button_prevDay.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(currentDate);
+				cal.add(Calendar.DATE, -1);
+				showDate(cal.getTime());
+			}
+		});
+
+		button_nextDay.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(currentDate);
+				cal.add(Calendar.DATE, 1);
+				showDate(cal.getTime());
 			}
 		});
 
@@ -92,7 +123,7 @@ public class DayActivity extends AppCompatActivity implements
 		button_editNewEntry.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				EventEntryDialog.newInstance(editText_newEntry.getText().toString(), currentDate)
+				EventEditDialog.newInstance(editText_newEntry.getText().toString(), currentDate)
 						.show(getSupportFragmentManager(), "createEvent");
 			}
 		});
@@ -101,16 +132,7 @@ public class DayActivity extends AppCompatActivity implements
 			@Override
 			public void onClick(View view) {
 				String title = editText_newEntry.getText().toString();
-
-				if (title.trim().isEmpty()) {
-					Toast.makeText(DayActivity.this, "Title was empty. No event added.", Toast.LENGTH_SHORT).show();
-					return;
-				}
-
-				D2dDatabase db = new D2dDatabase(DayActivity.this);
-				D2dDatabase.EventEntry event = db.addEvent(currentDate, title, null);
-				db.close();
-
+				D2dEvent event = db.addEvent(currentDate, title, null);
 				finishCreateEvent(event);
 			}
 		});
@@ -121,7 +143,7 @@ public class DayActivity extends AppCompatActivity implements
 		listView_events.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long id) {
-				EventEntryDialog.newInstance(dayEventsAdapter.getItem(i))
+				EventEditDialog.newInstance(dayEventsAdapter.getItem(i))
 						.show(getSupportFragmentManager(), "editEvent");
 				return true;
 			}
@@ -129,18 +151,25 @@ public class DayActivity extends AppCompatActivity implements
 	}
 
 	@Override
+	protected void onStart() {
+		super.onStart();
+
+		db = new D2dDatabase(this);
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+
+		db.close();
+		db = null;
+	}
+
+	@Override
 	protected void onResume() {
 		super.onResume();
 
-		loadCurrentDayEvents();
-	}
-
-	private void loadCurrentDayEvents() {
-		button_currentDate.setText(SimpleDateFormat.getDateInstance().format(currentDate));
-
-		D2dDatabase db = new D2dDatabase(this);
-		dayEventsAdapter.showEvents(db.getEntries(currentDate));
-		db.close();
+		showDate(currentDate);
 	}
 
 	@Override
@@ -150,26 +179,52 @@ public class DayActivity extends AppCompatActivity implements
 		super.onSaveInstanceState(outState);
 	}
 
+	private void showDate(@NonNull Date date) {
+		currentDate = date;
+
+		button_currentDate.setText(SimpleDateFormat.getDateInstance().format(currentDate));
+
+		dayEventsAdapter.showEvents(db.getEntries(currentDate));
+
+		button_prevDay.setEnabled(isDateBefore(db.getMinDate(), currentDate));
+		button_nextDay.setEnabled(isDateBefore(currentDate, new Date()));
+	}
+
+	private boolean isDateBefore(Date d1, Date d2) {
+		Calendar cal1 = Calendar.getInstance();
+		cal1.setTime(d1);
+		cal1.set(Calendar.HOUR, 0);
+		cal1.set(Calendar.MINUTE, 0);
+		cal1.set(Calendar.SECOND, 0);
+		cal1.set(Calendar.MILLISECOND, 0);
+
+		Calendar cal2 = Calendar.getInstance();
+		cal2.setTime(d2);
+		cal2.set(Calendar.HOUR, 0);
+		cal2.set(Calendar.MINUTE, 0);
+		cal2.set(Calendar.SECOND, 0);
+		cal2.set(Calendar.MILLISECOND, 0);
+
+		return cal1.before(cal2);
+	}
+
 	@Override
 	public void onDateSet(DatePicker datePicker, int year, int month, int day) {
 		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month);
-		cal.set(Calendar.DAY_OF_MONTH, day);
-		currentDate = cal.getTime();
-		loadCurrentDayEvents();
+		cal.set(year, month, day, 0, 0, 0);
+		showDate(cal.getTime());
 	}
 
-	/* implements EventEntryDialog.OnDismissListener ********************************** */
+	/* implements EventEditDialog.OnDismissListener ********************************** */
 
 	@Override
-	public void finishCreateEvent(D2dDatabase.EventEntry event) {
+	public void finishCreateEvent(D2dEvent event) {
 		dayEventsAdapter.prependEvent(event);
 		editText_newEntry.setText("");
 	}
 
 	@Override
-	public void finishEditEvent(D2dDatabase.EventEntry event) {
+	public void finishEditEvent(D2dEvent event) {
 		dayEventsAdapter.updateEvent(event);
 	}
 

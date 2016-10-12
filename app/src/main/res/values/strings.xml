@@ -10,5 +10,11 @@
     <string name="dialog_addEvent_done">Add</string>
     <string name="dialog_editEvent_done">Save</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="button_prevDay_text">«</string>
+    <string name="button_prevDay_help">Go to previous day</string>
+    <string name="button_nextDay_text">»</string>
+    <string name="button_nextDay_help">Go to next day</string>
+    <string name="button_editNewEvent_help">Edit new event</string>
+    <string name="button_addNewEvent_help">Add new event</string>
 
 </resources>

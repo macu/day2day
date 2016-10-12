@@ -14,13 +14,16 @@ import android.widget.EditText;
 
 import java.util.Date;
 
+import ca.mattcudmore.day2day.db.D2dDatabase;
+import ca.mattcudmore.day2day.db.D2dEvent;
+
 /**
  * Created by macu on 2016-10-10.
  */
-public class EventEntryDialog extends DialogFragment {
+public class EventEditDialog extends DialogFragment {
 
-	public static EventEntryDialog newInstance(@NonNull String title, @NonNull Date date) {
-		EventEntryDialog frag = new EventEntryDialog();
+	public static EventEditDialog newInstance(@NonNull String title, @NonNull Date date) {
+		EventEditDialog frag = new EventEditDialog();
 		Bundle args = new Bundle();
 		args.putString("title", title);
 		args.putSerializable("date", date);
@@ -28,8 +31,8 @@ public class EventEntryDialog extends DialogFragment {
 		return frag;
 	}
 
-	public static EventEntryDialog newInstance(@NonNull D2dDatabase.EventEntry event) {
-		EventEntryDialog frag = new EventEntryDialog();
+	public static EventEditDialog newInstance(@NonNull D2dEvent event) {
+		EventEditDialog frag = new EventEditDialog();
 		Bundle args = new Bundle();
 		args.putSerializable("event", event);
 		frag.setArguments(args);
@@ -37,25 +40,25 @@ public class EventEntryDialog extends DialogFragment {
 	}
 
 	public interface OnDismissListener {
-		void finishCreateEvent(D2dDatabase.EventEntry event);
+		void finishCreateEvent(D2dEvent event);
 
-		void finishEditEvent(D2dDatabase.EventEntry event);
+		void finishEditEvent(D2dEvent event);
 
 		void cancelCreateEvent(String title);
 
 		void cancelEditEvent();
 	}
 
-	private D2dDatabase.EventEntry event;
+	private D2dEvent event;
 
 	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		final View view = getActivity().getLayoutInflater().inflate(R.layout.event_edit, null);
+		final View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_event_edit, null);
 		final EditText editText_eventTitle = (EditText) view.findViewById(R.id.editText_eventTitle);
 		final EditText editText_eventComment = (EditText) view.findViewById(R.id.editText_eventComment);
 
-		event = (D2dDatabase.EventEntry) getArguments().getSerializable("event");
+		event = (D2dEvent) getArguments().getSerializable("event");
 		if (event != null) {
 			editText_eventTitle.setText(event.title);
 			editText_eventComment.setText(event.comment);
