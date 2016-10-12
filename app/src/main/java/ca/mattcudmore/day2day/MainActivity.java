@@ -6,7 +6,9 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -25,15 +27,16 @@ public class MainActivity extends AppCompatActivity implements
 		EventEditDialog.OnDismissListener {
 
 	private Button button_currentDate, button_prevDay, button_nextDay;
+	private ViewGroup layout_newEvent;
 	private EditText editText_newEntry;
-	private Button button_editNewEntry, button_addNewEntry;
+	private Button button_editNewEvent, button_addNewEvent;
 	private ListView listView_events;
 
 	private D2dDatabase db;
 
 	private DayEventsAdapter dayEventsAdapter;
 
-	private Date currentDate;
+	private Date displayedDate;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -41,25 +44,26 @@ public class MainActivity extends AppCompatActivity implements
 		setContentView(R.layout.activity_main);
 
 		if (savedInstanceState != null) {
-			currentDate = (Date) savedInstanceState.getSerializable("currentDate");
+			displayedDate = (Date) savedInstanceState.getSerializable("displayedDate");
 		}
-		if (currentDate == null) {
-			currentDate = new Date();
+		if (displayedDate == null) {
+			displayedDate = new Date();
 		}
 
 		button_currentDate = (Button) findViewById(R.id.button_currentDate);
 		button_prevDay = (Button) findViewById(R.id.button_prevDay);
 		button_nextDay = (Button) findViewById(R.id.button_nextDay);
+		layout_newEvent = (ViewGroup) findViewById(R.id.layout_newEvent);
 		editText_newEntry = (EditText) findViewById(R.id.editText_newEvent);
-		button_editNewEntry = (Button) findViewById(R.id.button_editNewEvent);
-		button_addNewEntry = (Button) findViewById(R.id.button_addNewEvent);
+		button_editNewEvent = (Button) findViewById(R.id.button_editNewEvent);
+		button_addNewEvent = (Button) findViewById(R.id.button_addNewEvent);
 		listView_events = (ListView) findViewById(R.id.listView_events);
 
 		button_currentDate.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				Calendar cal = Calendar.getInstance();
-				cal.setTime(currentDate);
+				cal.setTime(displayedDate);
 				int year = cal.get(Calendar.YEAR);
 				int month = cal.get(Calendar.MONTH);
 				int day = cal.get(Calendar.DAY_OF_MONTH);
@@ -86,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements
 			@Override
 			public void onClick(View v) {
 				Calendar cal = Calendar.getInstance();
-				cal.setTime(currentDate);
+				cal.setTime(displayedDate);
 				cal.add(Calendar.DATE, -1);
 				showDate(cal.getTime());
 			}
@@ -96,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements
 			@Override
 			public void onClick(View v) {
 				Calendar cal = Calendar.getInstance();
-				cal.setTime(currentDate);
+				cal.setTime(displayedDate);
 				cal.add(Calendar.DATE, 1);
 				showDate(cal.getTime());
 			}
@@ -115,25 +119,34 @@ public class MainActivity extends AppCompatActivity implements
 					@Override
 					public void afterTextChanged(Editable s) {
 						boolean textEntered = !editText_newEntry.getText().toString().trim().isEmpty();
-						button_addNewEntry.setEnabled(textEntered);
+						button_addNewEvent.setEnabled(textEntered);
 					}
 				}
 		);
 
-		button_editNewEntry.setOnClickListener(new View.OnClickListener() {
+		editText_newEntry.setOnKeyListener(new View.OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+					submitNewEvent();
+					return true;
+				}
+				return false;
+			}
+		});
+
+		button_editNewEvent.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				EventEditDialog.newInstance(editText_newEntry.getText().toString(), currentDate)
+				EventEditDialog.newInstance(editText_newEntry.getText().toString(), displayedDate)
 						.show(getSupportFragmentManager(), "createEvent");
 			}
 		});
 
-		button_addNewEntry.setOnClickListener(new View.OnClickListener() {
+		button_addNewEvent.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				String title = editText_newEntry.getText().toString();
-				D2dEvent event = db.addEvent(currentDate, title, null);
-				finishCreateEvent(event);
+				submitNewEvent();
 			}
 		});
 
@@ -169,25 +182,32 @@ public class MainActivity extends AppCompatActivity implements
 	protected void onResume() {
 		super.onResume();
 
-		showDate(currentDate);
+		showDate(displayedDate);
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		outState.putSerializable("currentDate", currentDate);
+		outState.putSerializable("displayedDate", displayedDate);
 
 		super.onSaveInstanceState(outState);
 	}
 
 	private void showDate(@NonNull Date date) {
-		currentDate = date;
+		displayedDate = date;
 
-		button_currentDate.setText(SimpleDateFormat.getDateInstance().format(currentDate));
+		Date today = new Date();
 
-		dayEventsAdapter.showEvents(db.getEntries(currentDate));
+		button_currentDate.setText(SimpleDateFormat.getDateInstance().format(displayedDate));
+		button_prevDay.setEnabled(isDateBefore(db.getMinDate(), displayedDate));
+		button_nextDay.setEnabled(isDateBefore(displayedDate, today));
 
-		button_prevDay.setEnabled(isDateBefore(db.getMinDate(), currentDate));
-		button_nextDay.setEnabled(isDateBefore(currentDate, new Date()));
+		// only allow adding events yesterday and today
+		Calendar yesterday = Calendar.getInstance();
+		yesterday.setTime(today);
+		yesterday.add(Calendar.DATE, -1);
+		layout_newEvent.setVisibility(isDateBefore(displayedDate, yesterday.getTime()) ? View.GONE : View.VISIBLE);
+
+		dayEventsAdapter.showEvents(db.getEntries(displayedDate));
 	}
 
 	private boolean isDateBefore(Date d1, Date d2) {
@@ -213,6 +233,12 @@ public class MainActivity extends AppCompatActivity implements
 		Calendar cal = Calendar.getInstance();
 		cal.set(year, month, day, 0, 0, 0);
 		showDate(cal.getTime());
+	}
+
+	private void submitNewEvent() {
+		String title = editText_newEntry.getText().toString();
+		D2dEvent event = db.addEvent(displayedDate, title, null);
+		finishCreateEvent(event);
 	}
 
 	/* implements EventEditDialog.OnDismissListener ********************************** */
