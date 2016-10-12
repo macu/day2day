@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -128,8 +129,12 @@ public class MainActivity extends AppCompatActivity implements
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
 				if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-					submitNewEvent();
-					return true;
+					if (!editText_newEntry.getText().toString().trim().isEmpty()) {
+						submitNewEvent();
+						return true;
+					} else {
+						Toast.makeText(MainActivity.this, R.string.toast_enterEventName, Toast.LENGTH_SHORT).show();
+					}
 				}
 				return false;
 			}
@@ -237,6 +242,9 @@ public class MainActivity extends AppCompatActivity implements
 
 	private void submitNewEvent() {
 		String title = editText_newEntry.getText().toString();
+		if (title.trim().isEmpty()) {
+			title = getString(R.string.blank_event_name);
+		}
 		D2dEvent event = db.addEvent(displayedDate, title, null);
 		finishCreateEvent(event);
 	}

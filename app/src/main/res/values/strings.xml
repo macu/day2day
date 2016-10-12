@@ -16,5 +16,7 @@
     <string name="button_nextDay_help">Go to next day</string>
     <string name="button_editNewEvent_help">Edit new event</string>
     <string name="button_addNewEvent_help">Add new event</string>
+    <string name="toast_enterEventName">Enter a name for the event</string>
+    <string name="blank_event_name">New event</string>
 
 </resources>
