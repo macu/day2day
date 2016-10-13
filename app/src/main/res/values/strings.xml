@@ -20,5 +20,17 @@
     <string name="blank_event_name">New event</string>
     <string name="editText_eventComment_hint">Comment</string>
     <string name="editText_eventTitle_hint">Title</string>
+    <string name="button_backupDatabase_text">Backup database</string>
+    <string name="button_restoreDatabase_text">Restore database</string>
+    <string name="dialog_backupDatabase_overwrite">A backup file already exists in your Downloads folder. It will be overwritten.</string>
+    <string name="dialog_restoreDatabase_confirm">Restoring a backup will overwrite all data!</string>
+    <string name="toast_restoreDatabase_noFile">No backup file found in your Downloads folder.</string>
+    <string name="toast_backupDatabase_success">Database backup saved to %s</string>
+    <string name="toast_restoreDatabase_success">Database restored successfully from backup. Backup deleted.</string>
+    <string name="toast_backupDatabase_failed">Failed to write backup file.</string>
+    <string name="toast_restoreDatabase_failed">Failed to restore backup.</string>
+    <string name="activity_backup_title">Backup and Restore</string>
+    <string name="textView_backupLocation_text">Backup location: %s</string>
+    <string name="toast_permissionDenied">Permission denied.</string>
 
 </resources>

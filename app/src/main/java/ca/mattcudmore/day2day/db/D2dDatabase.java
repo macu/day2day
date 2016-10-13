@@ -19,7 +19,7 @@ import timber.log.Timber;
  */
 public class D2dDatabase extends SQLiteOpenHelper {
 
-	private static final String DB_NAME = "d2d.db";
+	public static final String DB_NAME = "d2d.db";
 	private static final int DB_VERSION = 1;
 
 	public D2dDatabase(Context context) {

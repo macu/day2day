@@ -1,12 +1,16 @@
 package ca.mattcudmore.day2day;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -170,26 +174,28 @@ public class MainActivity extends AppCompatActivity implements
 	}
 
 	@Override
-	protected void onStart() {
-		super.onStart();
-
-		db = new D2dDatabase(this);
-	}
-
-	@Override
-	protected void onStop() {
-		super.onStop();
-
-		db.close();
-		db = null;
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.menu_main, menu);
+		return true;
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 
+		db = new D2dDatabase(this);
+
 		showDate(displayedDate);
 		observeNewEventEntryState();
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		db.close();
+		db = null;
 	}
 
 	@Override
@@ -197,6 +203,17 @@ public class MainActivity extends AppCompatActivity implements
 		outState.putSerializable("displayedDate", displayedDate);
 
 		super.onSaveInstanceState(outState);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.menu_backup:
+				startActivity(new Intent(this, BackupActivity.class));
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
+		}
 	}
 
 	private void showDate(@NonNull Date date) {
