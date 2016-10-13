@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -22,8 +21,6 @@ public class D2dDatabase extends SQLiteOpenHelper {
 
 	private static final String DB_NAME = "d2d.db";
 	private static final int DB_VERSION = 1;
-
-	static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 	public D2dDatabase(Context context) {
 		super(context, DB_NAME, null, DB_VERSION);
@@ -42,17 +39,17 @@ public class D2dDatabase extends SQLiteOpenHelper {
 		SQLiteDatabase db = getReadableDatabase();
 		Cursor c = db.query(
 				D2dEvent.TABLE_NAME,
-				new String[]{D2dEvent.COL_NAME_StartDay},
+				new String[]{D2dEvent.COL_NAME_Date},
 				null,
 				null,
 				null,
 				null,
-				D2dEvent.COL_NAME_StartDay
+				D2dEvent.COL_NAME_Date
 		);
 		c.moveToFirst();
 		if (!c.isAfterLast()) {
 			try {
-				return dateFormat.parse(c.getString(c.getColumnIndexOrThrow(D2dEvent.COL_NAME_StartDay)));
+				return D2dEvent.dateFormat.parse(c.getString(c.getColumnIndexOrThrow(D2dEvent.COL_NAME_Date)));
 			} catch (ParseException e) {
 				Timber.e(e);
 			} finally {
@@ -73,13 +70,13 @@ public class D2dDatabase extends SQLiteOpenHelper {
 	public List<D2dEvent> getEntries(@NonNull Date date) {
 		SQLiteDatabase db = getReadableDatabase();
 
-		String dateString = dateFormat.format(date);
+		String dateString = D2dEvent.dateFormat.format(date);
 
 		Cursor c = db.query(
 				D2dEvent.TABLE_NAME,
 				D2dEvent.PROJECTION_AllColumns,
-				D2dEvent.COL_NAME_StartDay + "<=? AND " + D2dEvent.COL_NAME_EndDay + ">=?",
-				new String[]{dateString, dateString},
+				D2dEvent.COL_NAME_Date + "=?",
+				new String[]{dateString},
 				null,
 				null,
 				D2dEvent._ID + " DESC"
